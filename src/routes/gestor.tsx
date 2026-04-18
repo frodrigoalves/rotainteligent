@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, lazy, Suspense } from "react";
+import { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -13,7 +13,15 @@ import {
   Settings2,
   Info,
   ChevronRight,
+  Download,
+  Upload,
+  FileJson,
 } from "lucide-react";
+import {
+  downloadRouteDemo,
+  downloadAllRoutesDemo,
+  importRoutesFromJson,
+} from "@/lib/export";
 import AppHeader from "@/components/AppHeader";
 import {
   loadRoutes,
