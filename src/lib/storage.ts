@@ -26,6 +26,7 @@ export interface Route {
   id: string;
   name: string;
   description?: string;
+  cyclic?: boolean; // se true, fecha o trajeto (último ponto retorna ao primeiro)
   waypoints: Waypoint[];
   createdAt: number;
   updatedAt: number;
@@ -69,87 +70,102 @@ export function setActiveRouteId(id: string) {
 
 export function seedRoute474(): Route {
   const now = Date.now();
-  // Coordenadas aproximadas na região de Juiz de Fora / Linha 474
-  // Ajustáveis depois pelo Gestor (clique e arraste).
+  // Linha 474 — Chácaras Santa Terezinha / Cidade Industrial via Metrô
+  // Operadora CONPASS · Contagem/MG · TransCon · Tarifa R$ 6,00
+  // Ciclo: bairro → Estação Eldorado (metrô) → Cidade Industrial → retorno.
+  // Coordenadas aproximadas (ajustáveis no Gestor por clique e arraste).
   const wps: Waypoint[] = ([
     {
-      lat: -21.7642, lng: -43.3496,
-      instruction: "Início do percurso na Rua das Contendas, 626. Verifique cinto e espelhos.",
+      lat: -19.9012, lng: -44.0915,
+      instruction: "Início do percurso no ponto das Chácaras Santa Terezinha. Confira cinto, espelhos e validador.",
       maneuver: "start", suggestedGear: "1ª", maxSpeed: 20,
-      observation: "Saída do ponto inicial, atenção a pedestres",
+      observation: "Saída do bairro, atenção a pedestres e ciclistas",
     },
     {
-      lat: -21.7651, lng: -43.3478,
-      instruction: "Siga em frente pela Rua das Contendas até a Avenida Wilson Tavares.",
+      lat: -19.8978, lng: -44.0876,
+      instruction: "Siga em frente pela via principal das Chácaras em direção à Av. Severino Ballesteros.",
       maneuver: "straight", suggestedGear: "2ª", maxSpeed: 30,
-      observation: "Trecho residencial, mantenha velocidade reduzida",
+      observation: "Trecho residencial, lombadas frequentes",
     },
     {
-      lat: -21.7665, lng: -43.3459,
-      instruction: "Vire à direita na Avenida Wilson Tavares.",
+      lat: -19.8932, lng: -44.0824,
+      instruction: "Vire à direita para acessar a Av. Severino Ballesteros.",
       maneuver: "right", suggestedGear: "2ª→3ª", maxSpeed: 40,
-      observation: "Curva fechada, sinalize antecipadamente",
+      observation: "Cruzamento sinalizado, dê preferência",
     },
     {
-      lat: -21.7689, lng: -43.3431,
-      instruction: "Siga reto pela Wilson Tavares e entre à esquerda na Rua 10.",
-      maneuver: "left", suggestedGear: "3ª", maxSpeed: 40,
-      observation: "Cruzamento com semáforo",
+      lat: -19.8854, lng: -44.0758,
+      instruction: "Continue pela Av. Severino Ballesteros em direção ao centro de Contagem.",
+      maneuver: "straight", suggestedGear: "3ª", maxSpeed: 50,
+      observation: "Avenida de fluxo médio, mantenha distância",
     },
     {
-      lat: -21.7712, lng: -43.3402,
-      instruction: "Continue pela Rua Mandarim em direção ao bairro.",
-      maneuver: "straight", suggestedGear: "3ª", maxSpeed: 40,
-      observation: "Atenção a quebra-molas",
+      lat: -19.8762, lng: -44.0671,
+      instruction: "Acesse a Via Expressa de Contagem (sentido BH).",
+      maneuver: "merge", suggestedGear: "3ª→4ª", maxSpeed: 60,
+      observation: "Verifique retrovisor antes de entrar no fluxo expresso",
     },
     {
-      lat: -21.7738, lng: -43.3375,
-      instruction: "Vire à direita na Rua México.",
-      maneuver: "right", suggestedGear: "2ª", maxSpeed: 30,
-      observation: "Escola próxima, redobre a atenção",
-    },
-    {
-      lat: -21.7756, lng: -43.3349,
-      instruction: "Siga pela Rua Chile mantendo velocidade moderada.",
-      maneuver: "straight", suggestedGear: "3ª", maxSpeed: 40,
-      observation: "Via de mão dupla, atenção ao fluxo",
-    },
-    {
-      lat: -21.7781, lng: -43.3308,
-      instruction: "Acesse a Avenida das Américas pela alça à direita.",
-      maneuver: "merge", suggestedGear: "3ª→4ª", maxSpeed: 50,
-      observation: "Verifique retrovisor antes de entrar",
-    },
-    {
-      lat: -21.7822, lng: -43.3245,
-      instruction: "Entre na BR-040 sentido Belo Horizonte.",
+      lat: -19.8694, lng: -44.0529,
+      instruction: "Siga pela Via Expressa em direção à Estação Eldorado do metrô.",
       maneuver: "highway", suggestedGear: "4ª→5ª", maxSpeed: 80,
-      observation: "Mantenha distância de segurança",
+      observation: "Mantenha faixa da direita para a próxima saída",
     },
     {
-      lat: -21.7896, lng: -43.3148,
-      instruction: "Pegue a saída em direção ao Terminal Eldorado.",
-      maneuver: "exit", suggestedGear: "4ª", maxSpeed: 60,
-      observation: "Reduza progressivamente",
+      lat: -19.8716, lng: -44.0432,
+      instruction: "Pegue a saída para a Estação Eldorado / Terminal Metropolitano.",
+      maneuver: "exit", suggestedGear: "4ª→3ª", maxSpeed: 50,
+      observation: "Reduza progressivamente, pista de saída curva",
     },
     {
-      lat: -21.7943, lng: -43.3089,
-      instruction: "Chegada ao Terminal Eldorado. Embarque e desembarque de passageiros.",
+      lat: -19.8745, lng: -44.0394,
+      instruction: "Parada no Terminal Metropolitano Eldorado. Embarque e desembarque de passageiros.",
       maneuver: "terminal", suggestedGear: "Neutro", maxSpeed: 10,
-      observation: "Aguarde sinalização do despachante",
+      observation: "Aguarde sinalização do despachante, integração com o metrô",
     },
     {
-      lat: -21.7921, lng: -43.3122,
-      instruction: "Retorno: faça o retorno e inicie o percurso de volta.",
-      maneuver: "uturn", suggestedGear: "1ª→2ª", maxSpeed: 20,
-      observation: "Retorno controlado, atenção total",
+      lat: -19.8801, lng: -44.0451,
+      instruction: "Saia do terminal e siga em direção à Av. Babita Camargos (Cidade Industrial).",
+      maneuver: "left", suggestedGear: "1ª→2ª", maxSpeed: 30,
+      observation: "Atenção a pedestres na saída do terminal",
+    },
+    {
+      lat: -19.8884, lng: -44.0537,
+      instruction: "Continue pela Av. Babita Camargos atendendo aos pontos da Cidade Industrial.",
+      maneuver: "straight", suggestedGear: "3ª", maxSpeed: 50,
+      observation: "Avenida industrial, atenção a caminhões manobrando",
+    },
+    {
+      lat: -19.8951, lng: -44.0648,
+      instruction: "Vire à esquerda na Av. Cardeal Eugênio Pacelli.",
+      maneuver: "left", suggestedGear: "2ª→3ª", maxSpeed: 40,
+      observation: "Cruzamento movimentado, semáforo presente",
+    },
+    {
+      lat: -19.8997, lng: -44.0762,
+      instruction: "Siga em frente pela Cardeal Eugênio Pacelli rumo ao retorno do bairro.",
+      maneuver: "straight", suggestedGear: "3ª", maxSpeed: 50,
+      observation: "Trecho com paradas frequentes",
+    },
+    {
+      lat: -19.9035, lng: -44.0853,
+      instruction: "Vire à direita para retornar pela rota do bairro Chácaras Santa Terezinha.",
+      maneuver: "right", suggestedGear: "2ª", maxSpeed: 30,
+      observation: "Curva fechada, sinalize com antecedência",
+    },
+    {
+      lat: -19.9012, lng: -44.0915,
+      instruction: "Encerramento do ciclo no ponto inicial das Chácaras Santa Terezinha. Aguarde nova partida conforme escala.",
+      maneuver: "end", suggestedGear: "Neutro", maxSpeed: 10,
+      observation: "Fim de viagem · ciclo completo",
     },
   ] as Omit<Waypoint, "id">[]).map((w) => ({ ...w, id: uid() }));
 
   return {
     id: uid(),
-    name: "Linha 474 — Contendas / Eldorado",
-    description: "Itinerário pré-cadastrado da Linha 474",
+    name: "Linha 474 — Chácaras Santa Terezinha / Cid. Industrial via Metrô",
+    description: "CONPASS · Contagem/MG · TransCon · Tarifa R$ 6,00 · Ciclo via Estação Eldorado",
+    cyclic: true,
     waypoints: wps,
     createdAt: now,
     updatedAt: now,
