@@ -21,6 +21,8 @@ interface RouteMapProps {
   busPosition?: { lat: number; lng: number } | null;
   selectedWaypointId?: string | null;
   onSelectWaypoint?: (id: string) => void;
+  cyclic?: boolean;
+  immersive?: boolean;
 }
 
 function ClickHandler({
@@ -51,7 +53,7 @@ function FitBounds({ waypoints, active }: { waypoints: Waypoint[]; active: boole
   return null;
 }
 
-function FollowBus({ pos }: { pos: { lat: number; lng: number } | null }) {
+function FollowBus({ pos, immersive }: { pos: { lat: number; lng: number } | null; immersive?: boolean }) {
   const map = useMap();
   const firstRef = useRef(true);
   useEffect(() => {
@@ -60,13 +62,13 @@ function FollowBus({ pos }: { pos: { lat: number; lng: number } | null }) {
       return;
     }
     if (firstRef.current) {
-      // Ao iniciar, dá zoom-in e centraliza com animação curta
-      map.flyTo([pos.lat, pos.lng], 16, { animate: true, duration: 0.8 });
+      const targetZoom = immersive ? 17 : 16;
+      map.flyTo([pos.lat, pos.lng], targetZoom, { animate: true, duration: 0.9 });
       firstRef.current = false;
     } else {
-      map.panTo([pos.lat, pos.lng], { animate: true, duration: 1.2 });
+      map.panTo([pos.lat, pos.lng], { animate: true, duration: 1.1 });
     }
-  }, [pos, map]);
+  }, [pos, map, immersive]);
   return null;
 }
 
@@ -98,12 +100,17 @@ export default function RouteMap({
   busPosition,
   selectedWaypointId,
   onSelectWaypoint,
+  cyclic,
+  immersive,
 }: RouteMapProps) {
   const center: [number, number] =
     waypoints.length > 0
       ? [waypoints[0].lat, waypoints[0].lng]
-      : [-21.7642, -43.3496];
+      : [-19.9012, -44.0915]; // Contagem/MG (Linha 474)
   const polyline = waypoints.map((w) => [w.lat, w.lng]) as [number, number][];
+  // Se for cíclico, fecha o trajeto retornando ao primeiro ponto
+  const closedPolyline: [number, number][] =
+    cyclic && polyline.length > 1 ? [...polyline, polyline[0]] : polyline;
   const busIconRef = useRef(makeBusIcon());
 
   return (
@@ -111,28 +118,56 @@ export default function RouteMap({
       center={center}
       zoom={14}
       scrollWheelZoom
+      zoomControl={false}
       className="h-full w-full"
     >
+      {/* Tiles dark imersivos (CartoDB Dark Matter) */}
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> · &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        subdomains="abcd"
+        maxZoom={20}
+      />
+      {/* Camada de labels nítida por cima */}
+      <TileLayer
+        url="https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png"
+        subdomains="abcd"
+        maxZoom={20}
+        attribution=""
       />
       {editable && <ClickHandler onAdd={onAddWaypoint} />}
       <FitBounds waypoints={waypoints} active={!!busPosition} />
-      {busPosition && <FollowBus pos={busPosition} />}
+      {busPosition && <FollowBus pos={busPosition} immersive={immersive} />}
 
-      {polyline.length > 1 && (
-        <Polyline
-          positions={polyline}
-          pathOptions={{
-            color: "oklch(0.68 0.19 245)",
-            weight: 5,
-            opacity: 0.85,
-          }}
-        />
+      {closedPolyline.length > 1 && (
+        <>
+          {/* Glow de fundo */}
+          <Polyline
+            positions={closedPolyline}
+            pathOptions={{
+              color: "oklch(0.72 0.2 245)",
+              weight: 14,
+              opacity: 0.18,
+              lineCap: "round",
+              lineJoin: "round",
+            }}
+          />
+          {/* Linha principal */}
+          <Polyline
+            positions={closedPolyline}
+            pathOptions={{
+              color: "oklch(0.78 0.18 245)",
+              weight: 5,
+              opacity: 0.95,
+              lineCap: "round",
+              lineJoin: "round",
+            }}
+          />
+        </>
       )}
 
       {waypoints.map((w, i) => {
+        // Em rota cíclica, o último ponto também é "fim" mas visualmente fecha no início
         const kind: "start" | "end" | "mid" =
           i === 0 ? "start" : i === waypoints.length - 1 ? "end" : "mid";
         const label = String(i + 1);
