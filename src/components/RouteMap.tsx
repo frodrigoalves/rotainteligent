@@ -36,20 +36,36 @@ function ClickHandler({
   return null;
 }
 
-function FitBounds({ waypoints }: { waypoints: Waypoint[] }) {
+function FitBounds({ waypoints, active }: { waypoints: Waypoint[]; active: boolean }) {
   const map = useMap();
+  const didFitRef = useRef(false);
   useEffect(() => {
+    // Só auto-ajusta enquanto NÃO está seguindo o ônibus,
+    // e apenas uma vez por mudança significativa de waypoints.
+    if (active) return;
     if (waypoints.length === 0) return;
     const bounds = L.latLngBounds(waypoints.map((w) => [w.lat, w.lng]));
     map.fitBounds(bounds, { padding: [60, 60], maxZoom: 16 });
-  }, [waypoints, map]);
+    didFitRef.current = true;
+  }, [waypoints, map, active]);
   return null;
 }
 
 function FollowBus({ pos }: { pos: { lat: number; lng: number } | null }) {
   const map = useMap();
+  const firstRef = useRef(true);
   useEffect(() => {
-    if (pos) map.panTo([pos.lat, pos.lng], { animate: true, duration: 0.8 });
+    if (!pos) {
+      firstRef.current = true;
+      return;
+    }
+    if (firstRef.current) {
+      // Ao iniciar, dá zoom-in e centraliza com animação curta
+      map.flyTo([pos.lat, pos.lng], 16, { animate: true, duration: 0.8 });
+      firstRef.current = false;
+    } else {
+      map.panTo([pos.lat, pos.lng], { animate: true, duration: 1.2 });
+    }
   }, [pos, map]);
   return null;
 }
@@ -102,7 +118,7 @@ export default function RouteMap({
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       {editable && <ClickHandler onAdd={onAddWaypoint} />}
-      <FitBounds waypoints={waypoints} />
+      <FitBounds waypoints={waypoints} active={!!busPosition} />
       {busPosition && <FollowBus pos={busPosition} />}
 
       {polyline.length > 1 && (
