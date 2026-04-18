@@ -78,9 +78,8 @@ function Splash() {
                 transition={{ duration: 0.6, delay: 0.25 }}
                 className="mt-5 max-w-xl text-center text-base text-muted-foreground md:text-lg"
               >
-                Inicie sua jornada com orientações de voz, telemetria em
-                tempo real e o trajeto completo da sua linha — tudo em uma
-                cabine pensada para o seu dia a dia.
+                Inicie seu percurso com orientações através do sistema de
+                Rota Inteligente.
               </motion.p>
 
               <motion.div
