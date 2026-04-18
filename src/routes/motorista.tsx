@@ -87,6 +87,8 @@ function MotoristaPage() {
     speak(`${wp.instruction}. ${tip}`, { priority: true });
   }
 
+  const mapSectionRef = useRef<HTMLElement | null>(null);
+
   function startSimulation() {
     if (!active || wps.length === 0) return;
     setRunning(true);
@@ -96,18 +98,39 @@ function MotoristaPage() {
     overspeedSpokenRef.current = false;
     speakWp(wps[0]);
 
+    // Garante que o mapa fique visível no mobile (rolagem suave até o mapa)
+    requestAnimationFrame(() => {
+      mapSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
     let i = 0;
+    // Interpola a posição do ônibus suavemente entre waypoints
+    let segStart = performance.now();
+    const TICK = 60; // ms
     intervalRef.current = setInterval(() => {
-      i++;
-      if (i >= wps.length) {
-        stopSimulation(true);
-        return;
+      const now = performance.now();
+      const t = Math.min(1, (now - segStart) / STEP_MS);
+      const from = wps[i];
+      const to = wps[i + 1];
+      if (to) {
+        setBusPos({
+          lat: from.lat + (to.lat - from.lat) * t,
+          lng: from.lng + (to.lng - from.lng) * t,
+        });
       }
-      setStepIndex(i);
-      setBusPos({ lat: wps[i].lat, lng: wps[i].lng });
-      overspeedSpokenRef.current = false;
-      speakWp(wps[i]);
-    }, STEP_MS);
+      if (t >= 1) {
+        i++;
+        if (i >= wps.length) {
+          stopSimulation(true);
+          return;
+        }
+        segStart = now;
+        setStepIndex(i);
+        setBusPos({ lat: wps[i].lat, lng: wps[i].lng });
+        overspeedSpokenRef.current = false;
+        speakWp(wps[i]);
+      }
+    }, TICK);
   }
 
   function stopSimulation(completed = false) {
@@ -182,7 +205,7 @@ function MotoristaPage() {
       <AppHeader />
       <div className="grid flex-1 gap-0 lg:grid-cols-[1fr_420px]">
         {/* Map */}
-        <section className="relative h-[55vh] lg:h-[calc(100vh-4rem)]">
+        <section ref={mapSectionRef} className="relative h-[70vh] lg:h-[calc(100vh-4rem)]">
           <Suspense
             fallback={
               <div className="grid h-full place-items-center text-muted-foreground">
