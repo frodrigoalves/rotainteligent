@@ -110,10 +110,11 @@ function MotoristaPage() {
     intervalRef.current = setInterval(() => {
       const now = performance.now();
       const t = Math.min(1, (now - segStart) / STEP_MS);
-      const from = wps[i];
+      const fromIdx = i >= wps.length ? 0 : i;
+      const from = wps[fromIdx];
       // Em rota cíclica, o último segmento volta ao primeiro waypoint
       const to = wps[i + 1] ?? (isCyclic ? wps[0] : null);
-      if (to) {
+      if (from && to) {
         setBusPos({
           lat: from.lat + (to.lat - from.lat) * t,
           lng: from.lng + (to.lng - from.lng) * t,
@@ -121,13 +122,12 @@ function MotoristaPage() {
       }
       if (t >= 1) {
         i++;
-        const lastIndex = wps.length - (isCyclic ? 0 : 1); // cíclico inclui passo extra de retorno
+        const lastIndex = wps.length - (isCyclic ? 0 : 1);
         if (i > lastIndex) {
           stopSimulation(true);
           return;
         }
         segStart = now;
-        // Se cíclico e i === wps.length, voltamos visualmente para o waypoint 0
         const safeIndex = i >= wps.length ? 0 : i;
         setStepIndex(safeIndex);
         setBusPos({ lat: wps[safeIndex].lat, lng: wps[safeIndex].lng });
