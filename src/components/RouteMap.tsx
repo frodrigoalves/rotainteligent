@@ -62,15 +62,34 @@ function FollowBus({ pos, immersive }: { pos: { lat: number; lng: number } | nul
       return;
     }
     if (firstRef.current) {
-      const targetZoom = immersive ? 17 : 16;
-      map.flyTo([pos.lat, pos.lng], targetZoom, { animate: true, duration: 0.9 });
+      const targetZoom = immersive ? 18 : 16;
+      map.flyTo([pos.lat, pos.lng], targetZoom, { animate: true, duration: 1.1 });
       firstRef.current = false;
     } else {
-      map.panTo([pos.lat, pos.lng], { animate: true, duration: 1.1 });
+      map.panTo([pos.lat, pos.lng], { animate: true, duration: 1.0 });
     }
   }, [pos, map, immersive]);
   return null;
 }
+
+function ImmersiveTilt({ active }: { active: boolean }) {
+  const map = useMap();
+  useEffect(() => {
+    const container = map.getContainer();
+    if (active) {
+      container.classList.add("ra-map-3d");
+    } else {
+      container.classList.remove("ra-map-3d");
+    }
+    // Leaflet precisa recalcular tamanho quando o container muda visualmente
+    setTimeout(() => map.invalidateSize(), 350);
+    return () => {
+      container.classList.remove("ra-map-3d");
+    };
+  }, [active, map]);
+  return null;
+}
+
 
 function makeMarkerIcon(label: string, kind: "start" | "end" | "mid") {
   return L.divIcon({
@@ -137,6 +156,7 @@ export default function RouteMap({
       />
       {editable && <ClickHandler onAdd={onAddWaypoint} />}
       <FitBounds waypoints={waypoints} active={!!busPosition} />
+      <ImmersiveTilt active={!!immersive} />
       {busPosition && <FollowBus pos={busPosition} immersive={immersive} />}
 
       {closedPolyline.length > 1 && (

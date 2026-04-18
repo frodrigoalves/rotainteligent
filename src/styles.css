@@ -137,6 +137,27 @@
   .leaflet-container {
     background: oklch(0 0 0) !important;
     font-family: var(--font-sans);
+    transition:
+      transform 700ms cubic-bezier(0.22, 1, 0.36, 1),
+      filter 700ms ease;
+    will-change: transform;
+  }
+  /* Tilt 3D imersivo durante condução */
+  .leaflet-container.ra-map-3d {
+    transform: perspective(1400px) rotateX(38deg) scale(1.08);
+    transform-origin: 50% 65%;
+    filter: contrast(1.05) saturate(1.1);
+  }
+  .leaflet-container.ra-map-3d .leaflet-tile-pane {
+    filter: drop-shadow(0 16px 24px oklch(0 0 0 / 0.55));
+  }
+  /* Animação suave de tiles e marcadores */
+  .leaflet-tile {
+    transition: opacity 200ms ease;
+  }
+  .leaflet-marker-icon,
+  .leaflet-marker-shadow {
+    transition: transform 1100ms cubic-bezier(0.22, 1, 0.36, 1);
   }
   .leaflet-control-attribution {
     background: oklch(0 0 0 / 0.7) !important;
