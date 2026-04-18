@@ -149,6 +149,7 @@ export function importRoutesFromJson(json: unknown): RouteData[] {
       id: uid(),
       name: String(r.name ?? "Rota importada"),
       description: r.description,
+      cyclic: Boolean((r as { cyclic?: boolean }).cyclic),
       waypoints,
       createdAt: now,
       updatedAt: now,
