@@ -98,20 +98,21 @@ function MotoristaPage() {
     overspeedSpokenRef.current = false;
     speakWp(wps[0]);
 
-    // Garante que o mapa fique visível no mobile (rolagem suave até o mapa)
     requestAnimationFrame(() => {
       mapSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
 
     let i = 0;
-    // Interpola a posição do ônibus suavemente entre waypoints
     let segStart = performance.now();
-    const TICK = 60; // ms
+    const TICK = 60;
+    const isCyclic = !!active.cyclic;
+
     intervalRef.current = setInterval(() => {
       const now = performance.now();
       const t = Math.min(1, (now - segStart) / STEP_MS);
       const from = wps[i];
-      const to = wps[i + 1];
+      // Em rota cíclica, o último segmento volta ao primeiro waypoint
+      const to = wps[i + 1] ?? (isCyclic ? wps[0] : null);
       if (to) {
         setBusPos({
           lat: from.lat + (to.lat - from.lat) * t,
@@ -120,15 +121,18 @@ function MotoristaPage() {
       }
       if (t >= 1) {
         i++;
-        if (i >= wps.length) {
+        const lastIndex = wps.length - (isCyclic ? 0 : 1); // cíclico inclui passo extra de retorno
+        if (i > lastIndex) {
           stopSimulation(true);
           return;
         }
         segStart = now;
-        setStepIndex(i);
-        setBusPos({ lat: wps[i].lat, lng: wps[i].lng });
+        // Se cíclico e i === wps.length, voltamos visualmente para o waypoint 0
+        const safeIndex = i >= wps.length ? 0 : i;
+        setStepIndex(safeIndex);
+        setBusPos({ lat: wps[safeIndex].lat, lng: wps[safeIndex].lng });
         overspeedSpokenRef.current = false;
-        speakWp(wps[i]);
+        speakWp(wps[safeIndex]);
       }
     }, TICK);
   }
