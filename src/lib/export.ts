@@ -65,6 +65,7 @@ export function exportRoutesAsDemo(routes: RouteData[]): DemoExport {
     routes: routes.map((r) => ({
       name: r.name,
       description: r.description,
+      cyclic: r.cyclic,
       totalWaypoints: r.waypoints.length,
       waypoints: r.waypoints.map((w, i) => ({
         order: i + 1,
