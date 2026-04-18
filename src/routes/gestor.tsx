@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, lazy, Suspense } from "react";
+import { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -13,7 +13,15 @@ import {
   Settings2,
   Info,
   ChevronRight,
+  Download,
+  Upload,
+  FileJson,
 } from "lucide-react";
+import {
+  downloadRouteDemo,
+  downloadAllRoutesDemo,
+  importRoutesFromJson,
+} from "@/lib/export";
 import AppHeader from "@/components/AppHeader";
 import {
   loadRoutes,
@@ -200,13 +208,61 @@ function GestorPage() {
     if (selectedWpId === id) setSelectedWpId(null);
   }
 
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  function handleExportAll() {
+    if (routes.length === 0) {
+      toast.error("Nenhuma rota para exportar");
+      return;
+    }
+    downloadAllRoutesDemo(routes);
+    toast.success("Arquivo demonstrativo baixado");
+  }
+
+  function handleExportRoute(r: RouteData) {
+    downloadRouteDemo(r);
+    toast.success(`"${r.name}" baixada`);
+  }
+
+  function handleImportClick() {
+    fileInputRef.current?.click();
+  }
+
+  async function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const json = JSON.parse(text);
+      const imported = importRoutesFromJson(json);
+      if (imported.length === 0) {
+        toast.error("Arquivo não contém rotas válidas");
+        return;
+      }
+      const next = [...routes, ...imported];
+      persist(next);
+      setActiveId(imported[0].id);
+      setActiveRouteId(imported[0].id);
+      toast.success(
+        imported.length === 1
+          ? "Rota importada com sucesso"
+          : `${imported.length} rotas importadas`,
+      );
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erro ao importar";
+      toast.error(`Falha na importação: ${msg}`);
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       <AppHeader />
       <div className="grid flex-1 gap-0 lg:grid-cols-[320px_1fr_380px]">
         {/* Routes sidebar */}
         <aside className="border-r border-border bg-sidebar/60 p-4 backdrop-blur lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:overflow-y-auto">
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               Rotas
             </h2>
@@ -217,6 +273,32 @@ function GestorPage() {
             >
               <Plus className="h-4 w-4" strokeWidth={2} /> Nova
             </Button>
+          </div>
+
+          <div className="mb-4 grid grid-cols-2 gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleImportClick}
+              className="h-8 gap-1.5"
+            >
+              <Upload className="h-3.5 w-3.5" strokeWidth={2} /> Importar
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleExportAll}
+              className="h-8 gap-1.5"
+            >
+              <Download className="h-3.5 w-3.5" strokeWidth={2} /> Exportar
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/json,.json"
+              onChange={handleImportFile}
+              className="hidden"
+            />
           </div>
           <ul className="space-y-2">
             {routes.map((r) => {
@@ -280,6 +362,13 @@ function GestorPage() {
                         <Copy className="h-3.5 w-3.5" strokeWidth={1.75} />
                       </button>
                       <button
+                        onClick={() => handleExportRoute(r)}
+                        className="rounded-md p-1.5 text-muted-foreground hover:bg-primary/15 hover:text-primary"
+                        title="Baixar (modelo demonstrativo)"
+                      >
+                        <Download className="h-3.5 w-3.5" strokeWidth={1.75} />
+                      </button>
+                      <button
                         onClick={() => handleDelete(r.id)}
                         className="ml-auto rounded-md p-1.5 text-muted-foreground hover:bg-destructive/15 hover:text-destructive"
                         title="Excluir"
@@ -293,14 +382,26 @@ function GestorPage() {
             })}
           </ul>
 
-          <div className="mt-6 rounded-xl border border-border bg-surface p-3">
-            <div className="flex items-start gap-2 text-xs text-muted-foreground">
-              <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={1.75} />
-              <p>
-                <span className="font-medium text-foreground">Dica:</span>{" "}
-                clique no mapa para adicionar um waypoint. Arraste os marcadores
-                para reposicioná-los.
-              </p>
+          <div className="mt-6 space-y-2">
+            <div className="rounded-xl border border-border bg-surface p-3">
+              <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={1.75} />
+                <p>
+                  <span className="font-medium text-foreground">Dica:</span>{" "}
+                  clique no mapa para adicionar um waypoint. Arraste os
+                  marcadores para reposicioná-los.
+                </p>
+              </div>
+            </div>
+            <div className="rounded-xl border border-border bg-surface p-3">
+              <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                <FileJson className="mt-0.5 h-4 w-4 shrink-0 text-accent" strokeWidth={1.75} />
+                <p>
+                  <span className="font-medium text-foreground">Modelo demo:</span>{" "}
+                  o arquivo JSON exportado inclui manifesto descritivo de cada
+                  campo, ideal para apresentação e reimportação.
+                </p>
+              </div>
             </div>
           </div>
         </aside>
