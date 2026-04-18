@@ -262,7 +262,7 @@ function GestorPage() {
       <div className="grid flex-1 gap-0 lg:grid-cols-[320px_1fr_380px]">
         {/* Routes sidebar */}
         <aside className="border-r border-border bg-sidebar/60 p-4 backdrop-blur lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:overflow-y-auto">
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               Rotas
             </h2>
@@ -273,6 +273,32 @@ function GestorPage() {
             >
               <Plus className="h-4 w-4" strokeWidth={2} /> Nova
             </Button>
+          </div>
+
+          <div className="mb-4 grid grid-cols-2 gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleImportClick}
+              className="h-8 gap-1.5"
+            >
+              <Upload className="h-3.5 w-3.5" strokeWidth={2} /> Importar
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleExportAll}
+              className="h-8 gap-1.5"
+            >
+              <Download className="h-3.5 w-3.5" strokeWidth={2} /> Exportar
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/json,.json"
+              onChange={handleImportFile}
+              className="hidden"
+            />
           </div>
           <ul className="space-y-2">
             {routes.map((r) => {
