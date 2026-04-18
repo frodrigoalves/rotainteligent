@@ -16,10 +16,12 @@ import {
   Download,
   Upload,
   FileJson,
+  FileText,
 } from "lucide-react";
 import {
   downloadRouteDemo,
   downloadAllRoutesDemo,
+  downloadRouteVisual,
   importRoutesFromJson,
 } from "@/lib/export";
 import AppHeader from "@/components/AppHeader";
@@ -221,7 +223,12 @@ function GestorPage() {
 
   function handleExportRoute(r: RouteData) {
     downloadRouteDemo(r);
-    toast.success(`"${r.name}" baixada`);
+    toast.success(`"${r.name}" baixada (JSON)`);
+  }
+
+  function handleExportVisual(r: RouteData) {
+    downloadRouteVisual(r);
+    toast.success(`"${r.name}" baixada (demonstrativo visual)`);
   }
 
   function handleImportClick() {
@@ -364,9 +371,16 @@ function GestorPage() {
                       <button
                         onClick={() => handleExportRoute(r)}
                         className="rounded-md p-1.5 text-muted-foreground hover:bg-primary/15 hover:text-primary"
-                        title="Baixar (modelo demonstrativo)"
+                        title="Baixar JSON (modelo demonstrativo)"
                       >
                         <Download className="h-3.5 w-3.5" strokeWidth={1.75} />
+                      </button>
+                      <button
+                        onClick={() => handleExportVisual(r)}
+                        className="rounded-md p-1.5 text-muted-foreground hover:bg-accent/15 hover:text-accent"
+                        title="Baixar demonstrativo visual (HTML)"
+                      >
+                        <FileText className="h-3.5 w-3.5" strokeWidth={1.75} />
                       </button>
                       <button
                         onClick={() => handleDelete(r.id)}
@@ -397,9 +411,10 @@ function GestorPage() {
               <div className="flex items-start gap-2 text-xs text-muted-foreground">
                 <FileJson className="mt-0.5 h-4 w-4 shrink-0 text-accent" strokeWidth={1.75} />
                 <p>
-                  <span className="font-medium text-foreground">Modelo demo:</span>{" "}
-                  o arquivo JSON exportado inclui manifesto descritivo de cada
-                  campo, ideal para apresentação e reimportação.
+                  <span className="font-medium text-foreground">Downloads:</span>{" "}
+                  <span className="font-mono text-[10px] uppercase">JSON</span> reimportável
+                  e <span className="font-mono text-[10px] uppercase">HTML</span> visual
+                  (com mapa, ícones e todas as orientações — imprimível como PDF).
                 </p>
               </div>
             </div>

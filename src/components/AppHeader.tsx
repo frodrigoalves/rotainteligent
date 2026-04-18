@@ -23,7 +23,7 @@ export default function AppHeader() {
               RA Routes
             </span>
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-              Linha 474 · gestão inteligente
+              Gestão inteligente de rotas
             </span>
           </div>
         </Link>

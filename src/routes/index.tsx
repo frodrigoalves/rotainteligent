@@ -6,11 +6,11 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "RA Routes — Gestão Inteligente da Linha 474" },
+      { title: "RA Routes — Gestão Inteligente de Rotas" },
       {
         name: "description",
         content:
-          "Sistema profissional para gestão e condução assistida da Linha 474, com voz, telemetria e mapa interativo.",
+          "Sistema profissional para gestão e condução assistida de múltiplas rotas, com voz, telemetria e mapa interativo.",
       },
     ],
   }),
@@ -59,7 +59,7 @@ function Splash() {
                   inteligente
                 </span>
                 <br />
-                para a Linha 474
+                para múltiplas rotas
               </motion.h1>
 
               <motion.p
@@ -68,8 +68,9 @@ function Splash() {
                 transition={{ duration: 0.6, delay: 0.25 }}
                 className="mt-6 max-w-2xl text-center text-lg text-muted-foreground"
               >
-                Gerencie rotas e dirija com orientações de voz em tempo real,
-                telemetria simulada e dicas de condução econômica.
+                Cadastre quantas rotas precisar, defina orientações por etapa
+                exibidas em texto e narradas por voz, e baixe um demonstrativo
+                visual completo do percurso.
               </motion.p>
 
               <motion.div
