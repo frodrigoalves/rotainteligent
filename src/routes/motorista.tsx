@@ -207,9 +207,48 @@ function MotoristaPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <AppHeader />
+
+      {/* Mobile sticky telemetry strip — sempre visível ao topo no mobile */}
+      <div className="sticky top-14 z-30 border-b border-border bg-background/85 backdrop-blur lg:hidden">
+        <div className="flex items-center justify-between gap-3 px-4 py-2.5">
+          <div className="flex items-baseline gap-1.5">
+            <span
+              className={`font-mono text-2xl font-bold leading-none tabular-nums ${overspeedAlert ? "text-destructive" : "text-foreground"}`}
+            >
+              {speed}
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+              km/h
+            </span>
+          </div>
+          <div className="flex items-center gap-3 text-right">
+            <div>
+              <div className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground">
+                Limite
+              </div>
+              <div className="font-mono text-sm font-semibold tabular-nums">
+                {targetSpeed}
+              </div>
+            </div>
+            <div>
+              <div className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground">
+                Marcha
+              </div>
+              <div className="font-mono text-sm font-semibold">{gear}</div>
+            </div>
+            <span
+              className={`h-2 w-2 shrink-0 rounded-full ${running ? "bg-success animate-pulse" : "bg-muted-foreground/40"}`}
+            />
+          </div>
+        </div>
+      </div>
+
       <div className="grid flex-1 gap-0 lg:grid-cols-[1fr_420px]">
         {/* Map */}
-        <section ref={mapSectionRef} className="relative h-[70vh] lg:h-[calc(100vh-4rem)]">
+        <section
+          ref={mapSectionRef}
+          className="relative h-[55vh] sm:h-[60vh] lg:h-[calc(100vh-4rem)]"
+        >
           <Suspense
             fallback={
               <div className="grid h-full place-items-center text-muted-foreground">
