@@ -21,6 +21,7 @@ export interface DemoExport {
   routes: Array<{
     name: string;
     description?: string;
+    cyclic?: boolean;
     totalWaypoints: number;
     waypoints: Array<{
       order: number;

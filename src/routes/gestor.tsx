@@ -435,6 +435,7 @@ function GestorPage() {
                 key={active.id}
                 waypoints={active.waypoints}
                 editable
+                cyclic={active.cyclic}
                 onAddWaypoint={handleAddWaypoint}
                 onMoveWaypoint={handleMoveWaypoint}
                 selectedWaypointId={selectedWpId}
